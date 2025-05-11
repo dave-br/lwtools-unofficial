@@ -39,6 +39,7 @@ char *outfile = NULL;
 char *scriptfile = NULL;
 int symerr = 0;
 char *map_file = NULL;
+char *mdi_file = NULL;
 
 fileinfo_t **inputfiles = NULL;
 int ninputfiles = 0;
@@ -59,6 +60,7 @@ void add_input_file(char *fn)
 	inputfiles[ninputfiles] = lw_alloc(sizeof(fileinfo_t));
 	memset(inputfiles[ninputfiles], 0, sizeof(fileinfo_t));
 	inputfiles[ninputfiles] -> forced = 1;
+	inputfiles[ninputfiles] -> filedir = NULL;
 	inputfiles[ninputfiles++] -> filename = lw_strdup(fn);
 }
 
@@ -69,6 +71,7 @@ void add_input_library(char *libname)
 	memset(inputfiles[ninputfiles], 0, sizeof(fileinfo_t));
 	inputfiles[ninputfiles] -> islib = 1;
 	inputfiles[ninputfiles] -> forced = 0;
+	inputfiles[ninputfiles] -> filedir = NULL;
 	inputfiles[ninputfiles++] -> filename = lw_strdup(libname);	
 }
 

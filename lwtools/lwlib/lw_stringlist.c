@@ -53,7 +53,7 @@ void lw_stringlist_destroy(lw_stringlist_t S)
 	}
 }
 
-void lw_stringlist_addstring(lw_stringlist_t S, char *str)
+void lw_stringlist_addstring(lw_stringlist_t S, const char *str)
 {
 	S -> strings = lw_realloc(S -> strings, sizeof(char *) * (S -> nstrings + 1));
 	S -> strings[S -> nstrings] = lw_strdup(str);

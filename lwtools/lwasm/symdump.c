@@ -28,6 +28,7 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 #include <lw_string.h>
 
 #include "lwasm.h"
+#include <../../mame/src/lib/srcdbg/srcdbg_api.h>
 
 struct listinfo
 {
@@ -60,7 +61,7 @@ int dump_symbols_test(lw_expr_t e, void *p)
 	return 0;
 }
 
-void dump_symbols_aux(asmstate_t *as, FILE *of, struct symtabe *se)
+void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectiontab_t *csect, struct symtabe *se)
 {
 	struct symtabe *s;
 	lw_expr_t te;
@@ -71,7 +72,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, struct symtabe *se)
 	if (!se)
 		return;
 	
-	dump_symbols_aux(as, of, se -> left);
+	dump_symbols_aux(as, of, mdi_simp_state, csect, se -> left);
 	
 	for (s = se; s; s = s -> nextver)
 	{	
@@ -83,11 +84,6 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, struct symtabe *se)
 
 		lwasm_reduce_expr(as, s -> value);
 
-		fprintf(of, "%s ", s -> symbol);
-		if (s -> flags & symbol_flag_set)
-			fputs("SET", of);
-		else
-			fputs("EQU", of);
 		te = lw_expr_copy(s -> value);
 		li.complex = 0;
 		li.sect = NULL;
@@ -99,19 +95,37 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, struct symtabe *se)
 			lwasm_reduce_expr(as, te);
 			as -> exportcheck = 0;
 		}
-		
-		if (lw_expr_istype(te, lw_expr_type_int))
+
+		if (of)		
 		{
-			fprintf(of, " $%04X\n", lw_expr_intval(te));
+			fprintf(of, "%s ", s -> symbol);
+			if (s -> flags & symbol_flag_set)
+				fputs("SET", of);
+			else
+				fputs("EQU", of);
+			if (lw_expr_istype(te, lw_expr_type_int))
+			{
+				fprintf(of, " $%04X\n", lw_expr_intval(te));
+			}
+			else
+			{
+				fprintf(of, " 0 ; <<incomplete>>\n");
+			}
 		}
-		else
+		else if (lw_expr_istype(te, lw_expr_type_int) &&
+			// Apply section filter if present; always include symbols outside any section
+			(csect == NULL || as -> csect == NULL || csect == as -> csect))
 		{
-			fprintf(of, " 0 ; <<incomplete>>\n");
+			mame_srcdbg_simp_add_global_fixed_symbol(
+				mdi_simp_state,
+				s -> symbol,
+				lw_expr_intval(te),
+				(s -> flags & symbol_flag_constant) ? MAME_SRCDBG_SYMFLAG_CONSTANT : 0);
 		}
 		lw_expr_destroy(te);
 	}
 	
-	dump_symbols_aux(as, of, se -> right);
+	dump_symbols_aux(as, of, mdi_simp_state, csect, se -> right);
 }
 
 void do_symdump(asmstate_t *as)
@@ -142,5 +156,5 @@ void do_symdump(asmstate_t *as)
 			return;
 		}
 	}
-	dump_symbols_aux(as, of, as -> symtab.head);
+	dump_symbols_aux(as, of, NULL /* mdi_simp_state */, NULL /* sect */, as -> symtab.head);
 }

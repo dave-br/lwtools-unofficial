@@ -81,6 +81,7 @@ enum lwasm_flags_e
 	FLAG_SYMBOLS_NOLOCALS = 0x0040,
 	FLAG_NOOUT = 0x80,
 	FLAG_SYMDUMP = 0x100,
+	FLAG_MDI = 0x200,
 	FLAG_NONE = 0
 };
 
@@ -314,6 +315,7 @@ struct line_s
 	char *ltext;						// line number
 	char *linespec;						// line spec
 	int lineno;							// line number
+	const char *file_path;
 	int soff;							// struct offset (for listings)
 	int dshow;							// data value to show (for listings)
 	int dsize;							// set to 1 for 8 bit dshow value
@@ -332,6 +334,13 @@ enum
 	symbol_flag_nocheck = 2,			// do not check symbol characters
 	symbol_flag_nolist = 4,				// no not show symbol in symbol table
 	symbol_flag_nocase = 8,				// do not match case of symbol
+	// TODO: Current code uses fallible heuritistic to just mark any symbol
+	// defined with EQU or SET or to a data address as constant.  (Fails when
+	// using EQU to a *, as that should not be considered constant.) Consider
+	// changing replacing heuristic with something explicitly declared by
+	// user, e.g., with a pragma or pseudo-op to define
+	// a block of code as defining constant symbols.
+	symbol_flag_constant = 16,			// does not participate in code relocation
 	symbol_flag_none = 0				// no flags
 };
 
@@ -431,6 +440,7 @@ struct asmstate_s
 	importlist_t *importlist;			// list of imported symbols
 	char *list_file;					// name of file to list to
 	char *symbol_dump_file;				// name of file to dump symbol table to
+	// char *mame_dbg_file;				// name of file to dump MAME debugging info to
 	int tabwidth;						// tab width in list file
 	char *map_file;						// name of map file
 	char *output_file;					// output file name	
@@ -438,6 +448,7 @@ struct asmstate_s
 	void *input_data;					// opaque data used by the input system
 	lw_stringlist_t include_list;		// include paths
 	lw_stack_t file_dir;				// stack of the "current file" dir
+	lw_stack_t full_paths;				// stack of "current file" dir + name
 	lw_stack_t includelist;
 	lw_dict_t stringvars;               // dictionary of string variables (SETSTR/INCLUDESTR)
 

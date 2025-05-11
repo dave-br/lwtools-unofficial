@@ -38,7 +38,7 @@ typedef struct lw_stringlist_priv * lw_stringlist_t;
 typedef void * lw_stringlist_t;
 lw_stringlist_t lw_stringlist_create(void);
 void lw_stringlist_destroy(lw_stringlist_t S);
-void lw_stringlist_addstring(lw_stringlist_t S, char *str);
+void lw_stringlist_addstring(lw_stringlist_t S, const char *str);
 void lw_stringlist_reset(lw_stringlist_t S);
 char *lw_stringlist_current(lw_stringlist_t S);
 char *lw_stringlist_next(lw_stringlist_t S);

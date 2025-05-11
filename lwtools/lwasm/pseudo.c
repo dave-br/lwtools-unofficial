@@ -1079,7 +1079,7 @@ PARSEFUNC(pseudo_parse_equ)
 		return;
 	}
 	
-	register_symbol(as, l, l -> sym, e, symbol_flag_none);
+	register_symbol(as, l, l -> sym, e, symbol_flag_constant);
 	l -> symset = 1;
 	l -> dptr = lookup_symbol(as, l, l -> sym);
 	lw_expr_destroy(e);
@@ -1104,7 +1104,7 @@ PARSEFUNC(pseudo_parse_set)
 		return;
 	}
 	
-	register_symbol(as, l, l -> sym, e, symbol_flag_set);
+	register_symbol(as, l, l -> sym, e, symbol_flag_constant);
 	l -> symset = 1;
 	l -> dptr = lookup_symbol(as, l, l -> sym);
 	lw_expr_destroy(e);

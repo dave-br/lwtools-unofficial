@@ -126,6 +126,10 @@ static int parse_opts(int key, char *arg, void *state)
 		map_file = arg;
 		break;
 	
+	case 'i':
+		mdi_file = arg;
+		break;
+	
 	case lw_cmdline_key_arg:
 		add_input_file(arg);
 		break;
@@ -162,6 +166,8 @@ static struct lw_cmdline_options options[] =
 				"Specify the path to replace an initial = with in library paths" },
 	{ "map",		'm',	"FILE",		0,
 				"Output informaiton about the link" },
+	{ "mdi",		'i',	"FILE",		0,
+				"Output MAME debugging information" },
 	{ 0 }
 };
 
@@ -183,6 +189,7 @@ extern void resolve_references(void);
 extern void resolve_padding(void);
 extern void do_output(void);
 extern void display_map(void);
+extern void do_mame_dump(void);
 
 // main function; parse command line, set up assembler state, and run the
 // assembler on the first file
@@ -231,6 +238,10 @@ int main(int argc, char **argv)
 	// display/output the link map
 	if (map_file)
 		display_map();
+
+	// Generate MAME debugging information
+	if (mdi_file)
+		do_mame_dump();
 
 	exit(0);
 }

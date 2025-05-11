@@ -81,6 +81,7 @@ typedef struct
 struct fileinfo_s
 {
 	char *filename;
+	char *filedir;
 	unsigned char *filedata;
 	int filesize;
 	section_t *sections;
@@ -137,6 +138,8 @@ extern char **scriptls;
 extern int symerr;
 
 extern char *map_file;
+
+extern char *mdi_file;
 
 extern char *sysroot;
 

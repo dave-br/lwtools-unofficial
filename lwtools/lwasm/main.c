@@ -50,6 +50,7 @@ static struct lw_cmdline_options options[] =
 	{ "symbols",	's',	0,			lw_cmdline_opt_optional,	"Generate symbol list in listing, no effect without --list"},
 	{ "symbols-nolocals", 0x103,	0,	lw_cmdline_opt_optional,	"Same as --symbols but with local labels ignored"},
 	{ "symbol-dump", 0x106, "FILE",		lw_cmdline_opt_optional,	"Dump global symbol table in assembly format" },
+	{ "MAME-dbg-info", 'i', 0,			lw_cmdline_opt_optional,	"Generate debugging information for use in MAME"},
 	{ "tabs",		't',	"WIDTH",	0,							"Set tab spacing in listing (0=don't expand tabs)" },
 	{ "map",		'm',	"FILE",		lw_cmdline_opt_optional,	"Generate map [to FILE]"},
 	{ "decb",		'b',	0,			0,							"Generate DECB .bin format output, equivalent of --format=decb"},
@@ -134,6 +135,16 @@ static int parse_opts(int key, char *arg, void *state)
 		else
 			as -> debug_level = atoi(arg);
 #endif
+		break;
+
+	case 'i':
+		// if (as -> mame_dbg_file)
+		// 	lw_free(as -> mame_dbg_file);
+		// if (!arg)
+		// 	as -> mame_dbg_file = lw_strdup("-");
+		// else
+		// 	as -> mame_dbg_file = lw_strdup(arg);
+		as -> flags |= FLAG_MDI;
 		break;
 
 	case 't':
@@ -307,6 +318,7 @@ void do_pass7(asmstate_t *as);
 void do_output(asmstate_t *as);
 void do_symdump(asmstate_t *as);
 void do_list(asmstate_t *as);
+void do_mame_dump(asmstate_t *as);
 void do_map(asmstate_t *as);
 lw_expr_t lwasm_evaluate_special(int t, void *ptr, void *priv);
 lw_expr_t lwasm_evaluate_var(char *var, void *priv);
@@ -424,6 +436,7 @@ int main(int argc, char **argv)
 	}
 	do_symdump(&asmstate);
 	do_list(&asmstate);
+	do_mame_dump(&asmstate);
 	do_map(&asmstate);
 
 	if (asmstate.testmode_errorcount > 0) exit(1);

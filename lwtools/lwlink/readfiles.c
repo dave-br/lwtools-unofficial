@@ -108,6 +108,8 @@ void read_files(void)
 					free(tf);
 					continue;
 				}
+				// TODO: MEMORY LEAK
+				inputfiles[i] -> filedir = lw_strdup(libdirs[j]);
 				free(tf);
 				break;
 			}
@@ -443,6 +445,7 @@ void read_lwar1v(fileinfo_t *fn)
 		memset(fn -> subs[fn -> nsubs], 0, sizeof(fileinfo_t));
 		fn -> subs[fn -> nsubs] -> filedata = fn -> filedata + cc;
 		fn -> subs[fn -> nsubs] -> filesize = flen;
+		fn -> subs[fn -> nsubs] -> filedir = NULL;
 		fn -> subs[fn -> nsubs] -> filename = lw_strdup((char *)(fn -> filedata + l));
 		fn -> subs[fn -> nsubs] -> parent = fn;
 		fn -> subs[fn -> nsubs] -> forced = fn -> forced;		

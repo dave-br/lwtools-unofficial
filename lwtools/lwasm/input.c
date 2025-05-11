@@ -136,6 +136,11 @@ void input_init(asmstate_t *as)
 	if (as -> file_dir)
 		lw_stack_destroy(as -> file_dir);
 	as -> file_dir = lw_stack_create(lw_free);
+
+	if (as -> full_paths)
+		lw_stack_destroy(as -> full_paths);
+	as -> full_paths = lw_stack_create(lw_free);
+
 	as -> includelist = lw_stack_create(lw_free);
 	lw_stringlist_reset(as -> input_files);
 	while (IS)
@@ -153,10 +158,14 @@ void input_pushpath(asmstate_t *as, char *fn)
 	
 	/* also add it to the list of files included */
 	char *dn, *dp;
+	char * full_path;
 //	int o;
 
 	dn = lw_strdup(fn);
 	lw_stack_push(as -> includelist, dn);
+
+	full_path = lw_strdup(fn);
+	lw_stack_push(as -> full_paths, full_path);
 
 	dn = lw_strdup(fn);
 	dp = dn + strlen(dn);
@@ -427,6 +436,10 @@ nextfile:
 					if (IS -> data)
 						fclose(IS -> data);
 					lw_free(lw_stack_pop(as -> file_dir));
+
+					// TODO: MEMORY LEAK, keeping full_path string around so lineinfo still sees it
+					lw_stack_pop(as -> full_paths);
+
 					lw_free(IS -> filespec);
 					t = IS -> next;
 					while (IS -> stack)

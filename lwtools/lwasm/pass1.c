@@ -68,7 +68,6 @@ void do_pass1(asmstate_t *as)
 	int lc = 1;
 	int nomacro;
 	int wasmacro;
-	
 	for (;;)
 	{
 		nomacro = 0;
@@ -115,6 +114,7 @@ void do_pass1(asmstate_t *as)
 		memset(cl, 0, sizeof(line_t));
 		cl -> outputl = -1;
 		cl -> linespec = lw_strdup(input_curspec(as));
+		cl -> file_path = (const char *) lw_stack_top(as -> full_paths);
 		cl -> prev = as -> line_tail;
 		cl -> insn = -1;
 		cl -> as = as;
@@ -439,7 +439,7 @@ void do_pass1(asmstate_t *as)
 				if ((cl -> insn >= 0) && (instab[cl -> insn].flags & lwasm_insn_setdata))
 				{
 					debug_message(as, 50, "Register symbol %s: %s (D)", cl -> sym, lw_expr_print(cl -> daddr));
-					if (!register_symbol(as, cl, cl -> sym, cl -> daddr, symbol_flag_none))
+					if (!register_symbol(as, cl, cl -> sym, cl -> daddr, symbol_flag_constant))
 					{
 						// symbol error
 						// lwasm_register_error2(as, cl, E_SYMBOL_BAD, "(%s)", cl -> sym);
