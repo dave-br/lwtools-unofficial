@@ -12,9 +12,10 @@
 #include "lwasm.h"
 #include "instab.h"
 
-// #include "mdisimple.h"
 #include <srcdbg_api.h>
 
+// realpath is POSIX-only, _fullpath works on Windows.
+// TODO: What about mac?
 #ifdef WIN32
     #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
 #endif
@@ -27,8 +28,6 @@ char * normalize_path(const char * path_in, char * path_out)
 	// TODO: Other parts of the code that trim include also trim leading whitespace.  Why?
 
 	// relative to absolute path
-	// TODO: realpath is POSIX-only, but appears to work on Windows builds as well due to
-	// cygwin.  Are there build targets where realpath doesn't exist?
 	return realpath(path_in, path_out);
 }
 
@@ -72,6 +71,7 @@ unsigned short fpm_file_to_index(file_path_map * fpm, const char * file)
 	// as -> output_format = OUTPUT_OBJ
 	char normalized_path[PATH_MAX+1];
 	unsigned int ret;
+	int mame_err;
 	
 	// Is filespec already cached?
 	ret = search_list_for_file(fpm->list, file);
@@ -84,11 +84,17 @@ unsigned short fpm_file_to_index(file_path_map * fpm, const char * file)
 	// Convert filespec to absolute path
 	if (normalize_path(file, normalized_path) == NULL)
 	{
+		fprintf(stderr, "Error while writing MAME debugging information file: unable to normalize file path '%s'\n", file);
 		return (unsigned short) -1;
 	}
 
 	// Inform dbginfo builder of new path
-	mame_srcdbg_simp_add_source_file_path(fpm->mdi_simp_state, normalized_path, &ret);
+	mame_err = mame_srcdbg_simp_add_source_file_path(fpm->mdi_simp_state, normalized_path, &ret);
+	if (mame_err != MAME_SRCDBG_E_SUCCESS)
+	{
+		fprintf(stderr, "Error code '%d' trying to add source file path '%s'\n", mame_err, normalized_path);
+		return (unsigned short) -1;
+	}
 
 	// Cache new path
 	lw_stringlist_addstring(fpm->list, file);
@@ -108,37 +114,6 @@ void fpm_destroy(file_path_map * fpm)
 // Creates a filename from mdi_name, but with section_name inserted just before the extension
 void get_mdi_name(char *mdi_name, const char *mdi_base_name, const char *section_name)
 {
-	// char * last_separator = NULL;
-	// char * last_dot = NULL;
-	// char * string_end = NULL;
-	// int i = 0;
-	// char * string_temp;
-
-	// // TODO: NEEDS SIZE CHECKING, ERROR HANDLING
-	// strcpy(mdi_name, mdi_base_name);
-
-	// string_temp = mdi_name;
-	// while (*string_temp != '\0')
-	// {
-	// 	if (*string_temp == '\\' || *string_temp == '/')
-	// 	{
-	// 		last_separator = string_temp;
-	// 	}
-	// 	string_temp++;
-	// }
-	// string_end = string_temp;
-
-	// if (last_separator != NULL)
-	// {
-	// 	last_dot = strrchr(last_separator, '.');
-	// }
-	// if (last_dot == NULL)
-	// {
-	// 	last_dot = string_end;
-	// }
-
-	// sprintf(last_dot, "_%s.mdi", section_name);
-
 	// TODO: NEEDS SIZE CHECKING, ERROR HANDLING
 	sprintf(
 		mdi_name,
@@ -152,6 +127,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void *mdi_simp_state, sectiontab
 
 void finalize_section_dump(void **mdi_simp_state, asmstate_t *as, file_path_map **filemap)
 {
+	int mame_err;
 	assert (*mdi_simp_state != NULL);
 
 	dump_symbols_aux(as, NULL /* list file */, *mdi_simp_state, as -> csect, as -> symtab.head);
@@ -159,7 +135,12 @@ void finalize_section_dump(void **mdi_simp_state, asmstate_t *as, file_path_map 
 	fpm_destroy(*filemap);
 	*filemap = NULL;
 
-	mame_srcdbg_simp_close(*mdi_simp_state);
+	mame_err = mame_srcdbg_simp_close(*mdi_simp_state);
+	if (mame_err != MAME_SRCDBG_E_SUCCESS)
+	{
+		fprintf(stderr, "Error code '%d' trying to close MAME debuggin information file\n", mame_err);
+		return (unsigned short) -1;
+	}
 	*mdi_simp_state = NULL;
 }
 
@@ -169,6 +150,7 @@ void do_mame_dump(asmstate_t *as)
 	line_t *cl, *nl;
 	file_path_map * filemap = NULL;
 	char mdi_name[PATH_MAX+1];
+	int mame_err;
 
 	// if (!(as -> flags & FLAG_MDI) || !as->mame_dbg_file)
 	if (!(as -> flags & FLAG_MDI))
@@ -208,10 +190,10 @@ void do_mame_dump(asmstate_t *as)
 
 			// Open new mdi for this section
 			get_mdi_name(mdi_name, as->output_file, (cl -> csect == NULL ? NULL : cl -> csect -> name));
-			if (mame_srcdbg_simp_open_new(mdi_name, &mdi_simp_state) != 0)
+			mame_err = mame_srcdbg_simp_open_new(mdi_name, &mdi_simp_state);
+			if (mame_err != MAME_SRCDBG_E_SUCCESS)
 			{
-				int a = errno;
-				// TODO: ERROR
+				fprintf(stderr, "Error code '%d', errno '%d', trying to create new MAME debugging information file '%s'\n", mame_err, errno, mdi_name);
 				return;
 			}
 			filemap = fpm_create(mdi_simp_state);
@@ -223,9 +205,15 @@ void do_mame_dump(asmstate_t *as)
 		unsigned short file_idx = fpm_file_to_index(filemap, cl->file_path);
 		if (file_idx == (unsigned short) -1)
 		{
-			// TODO: ERROR
+			// Error already reported from fpm_file_to_index
+			return;
 		}
-		mame_srcdbg_simp_add_line_mapping(mdi_simp_state, addr, addr, file_idx, (unsigned int) cl->lineno);
+		mame_err = mame_srcdbg_simp_add_line_mapping(mdi_simp_state, addr, addr, file_idx, (unsigned int) cl->lineno);
+		if (mame_err != MAME_SRCDBG_E_SUCCESS)
+		{
+			fprintf(stderr, "Error code '%d' trying to add new line mapping to MAME debuggin information file\n", mame_err);
+			return;
+		}
 		lw_expr_destroy(te);
 	}
 

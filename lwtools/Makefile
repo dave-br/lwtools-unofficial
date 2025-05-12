@@ -42,10 +42,6 @@ endif
 CPPFLAGS += -I lwlib -Icommon -Imame_srcdbg
 CPPFLAGS += -DPREFIX=$(PREFIX) -DLWCC_LIBDIR=$(LWCC_LIBDIR)
 CPPFLAGS += -DPROGSUFFIX=$(PROGSUFFIX)
-# -L/cygdrive/c/cygwin64/lib/gcc/x86_64-pc-cygwin/12 -lstdc++ 
-# LDFLAGS += -Llwlib -L../mame/build/mingw-gcc/bin/x64/Debug -llw -lmame_srcdbg_writer -Wl,-rpath,/usr/local/libexec
-# LDFLAGS += -Llwlib -L../mame/build/linux_gcc/bin/x64/Release -llw -lmame_srcdbg_writer -Wl,-rpath,'$${ORIGIN}'
-# LDFLAGS += -Llwlib -L../mame/build/mingw-gcc/bin/x64/Debug -llw -lmame_srcdbg_static -lstdc++
 ifeq ($(OS),Windows_NT)
     LDFLAGS += -Lmame_srcdbg/win
 else
@@ -63,7 +59,7 @@ LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
 # -O2 which seems okay for now. Ideally identifying what breaks at
 # -O3 is indicated, but so far, identifying the specific source of
 # the breakage has been problematic.
-CFLAGS ?= -g -O0 -Wno-char-subscripts -Wno-format-truncation
+CFLAGS ?= -O2 -Wno-char-subscripts -Wno-format-truncation
 
 MAIN_TARGETS := lwasm/lwasm$(PROGSUFFIX) \
 	lwlink/lwlink$(PROGSUFFIX) \

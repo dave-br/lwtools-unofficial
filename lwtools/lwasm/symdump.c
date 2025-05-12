@@ -66,6 +66,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 	struct symtabe *s;
 	lw_expr_t te;
 	struct listinfo li;
+	int mame_err
 
 	li.as = as;
 	
@@ -116,11 +117,16 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 			// Apply section filter if present; always include symbols outside any section
 			(csect == NULL || as -> csect == NULL || csect == as -> csect))
 		{
-			mame_srcdbg_simp_add_global_fixed_symbol(
+			mame_err = mame_srcdbg_simp_add_global_fixed_symbol(
 				mdi_simp_state,
 				s -> symbol,
 				lw_expr_intval(te),
 				(s -> flags & symbol_flag_constant) ? MAME_SRCDBG_SYMFLAG_CONSTANT : 0);
+			if (mame_err != MAME_SRCDBG_E_SUCCESS)
+			{
+				fprintf(stderr, "Error code '%d' trying to add new global variable to MAME debuggin information file\n", mame_err);
+				return;
+			}
 		}
 		lw_expr_destroy(te);
 	}

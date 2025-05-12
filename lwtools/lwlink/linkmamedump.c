@@ -12,92 +12,6 @@
 
 #include <srcdbg_api.h>
 
-// // Converts a filespec into a full path.  Returns NULL if there was an error
-// char * normalize_path(const char * path_in, char * path_out)
-// {
-// 	// trim "include:" if it appears
-// 	if ((strlen(path_in) > 8) && (path_in[7] == ':')) path_in += 8;
-// 	// TODO: Other parts of the code that trim include also trim leading whitespace.  Why?
-
-// 	// relative to absolute path
-// 	// TODO: realpath is POSIX-only, but appears to work on Windows builds as well due to
-// 	// cygwin.  Are there build targets where realpath doesn't exist?
-// 	return realpath(path_in, path_out);
-// }
-
-// typedef struct
-// {
-// 	lw_stringlist_t list;
-// 	void * mdi_simp_state;
-// } file_path_map;
-
-
-// file_path_map * fpm_create(void * mdi_simp_state_p)
-// {
-// 	file_path_map * fpm = lw_alloc(sizeof(file_path_map));
-// 	fpm->list = lw_stringlist_create();
-// 	fpm->mdi_simp_state = mdi_simp_state_p;
-// 	return fpm;
-// }
-
-// unsigned short search_list_for_file(lw_stringlist_t list, const char * file)
-// {
-// 	unsigned short ret = 0;
-// 	const char * file_cur = NULL;
-
-// 	lw_stringlist_reset(list);
-
-// 	while ((file_cur = lw_stringlist_current(list)) != NULL)
-// 	{
-// 		if (strcmp(file_cur, file) == 0)
-// 		{
-// 			return ret;
-// 		}
-// 		ret++;
-// 		lw_stringlist_next(list);
-// 	}
-
-// 	return (unsigned short) -1;
-// }
-
-// unsigned short fpm_file_to_index(file_path_map * fpm, char * file)
-// {
-// 	char normalized_path[PATH_MAX+1];
-// 	unsigned short ret;
-	
-// 	// Is filespec already cached?
-// 	ret = search_list_for_file(fpm->list, file);
-// 	if (ret != (unsigned short) -1)
-// 	{
-// 		// Already cached, done
-// 		return ret;
-// 	}
-
-// 	// Convert filespec to absolute path
-// 	if (normalize_path(file, normalized_path) == NULL)
-// 	{
-// 		return (unsigned short) -1;
-// 	}
-
-// 	// Inform dbginfo builder of new path
-// 	mame_srcdbg_simp_add_source_file_path(fpm->mdi_simp_state, normalized_path, &ret);
-
-// 	// Cache new path
-// 	lw_stringlist_addstring(fpm->list, file);
-
-// 	// We rely on dbginfo builder's guarantee to dole out file indexes
-// 	// contiguously from 0 on.
-// 	assert(search_list_for_file(fpm->list, file) == ret);
-// 	return ret;
-// }
-
-// void fpm_destroy(file_path_map * fpm)
-// {
-// 	lw_stringlist_destroy(fpm->list);
-// 	lw_free(fpm);
-// }
-
-
 // TODO: SHARE WITH LWASM
 void get_mdi_name(char *mdi_name, const char *mdi_dir, const char *mdi_base_name, const char *section_name)
 {
@@ -118,11 +32,13 @@ void do_mame_dump()
 	void * mdi_simp_state = NULL; 
 	int sn;
 	char imported_mdi_name[PATH_MAX+1];
-	char error[1024];
+	char mame_import_error_message[1024];
+	int mame_err;
 
-	if (mame_srcdbg_simp_open_new(mdi_file, &mdi_simp_state) != 0)
+	mame_err = mame_srcdbg_simp_open_new(mdi_file, &mdi_simp_state);
+	if (mame_err != MAME_SRCDBG_E_SUCCESS)
 	{
-		fprintf(stderr, "Cannot create MAME debugging information file '%s'\n", mdi_file);
+		fprintf(stderr, "Error code '%d', errno '%d', trying to create new MAME debugging information file '%s'\n", mame_err, errno, mdi_file);
 		return;
 	}
 
@@ -139,13 +55,19 @@ void do_mame_dump()
 
 		get_mdi_name(imported_mdi_name, sectdir, sectfile, sectname);
 
-		// TODO: ERROR
-		if (mame_srcdbg_simp_import(mdi_simp_state, imported_mdi_name, sectlist[sn].ptr -> loadaddress, error, sizeof(error) != MAME_SRCDBG_E_SUCCESS))
+		mame_err = mame_srcdbg_simp_import(mdi_simp_state, imported_mdi_name, sectlist[sn].ptr -> loadaddress, mame_import_error_message, sizeof(mame_import_error_message));
+		if (mame_err != MAME_SRCDBG_E_SUCCESS)
 		{
-			fprintf(stderr, "Warning: unable to import debugging information from %s, section %s.  This information will be missing from the generated debugging information file.\n", sectfile, sectname);
+			fprintf(stderr, "Error code '%d', trying to import MAME debugging information file '%s'\n", mame_err, imported_mdi_name);
+			fprintf(stderr, "%s\n", mame_import_error_message);
+			return;
 		}
 	}
 
-	mame_srcdbg_simp_close(mdi_simp_state);
+	mame_err = mame_srcdbg_simp_close(mdi_simp_state);
+	if (mame_err != MAME_SRCDBG_E_SUCCESS)
+	{
+		fprintf(stderr, "Error code '%d' trying to close MAME debuggin information file\n", mame_err);
+	}
 	mdi_simp_state = NULL;
 }
