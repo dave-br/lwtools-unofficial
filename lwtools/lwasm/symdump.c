@@ -28,7 +28,7 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 #include <lw_string.h>
 
 #include "lwasm.h"
-#include <../../mame/src/lib/srcdbg/srcdbg_api.h>
+#include <srcdbg_api.h>
 
 struct listinfo
 {

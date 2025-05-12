@@ -13,7 +13,7 @@
 #include "instab.h"
 
 // #include "mdisimple.h"
-#include <../../mame/src/lib/srcdbg/srcdbg_api.h>
+#include <srcdbg_api.h>
 
 #ifdef WIN32
     #define realpath(N,R) _fullpath((R),(N),PATH_MAX)

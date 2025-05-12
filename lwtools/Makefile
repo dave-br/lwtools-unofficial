@@ -39,16 +39,14 @@ AR := $(BUILDTPREFIX)$(AR)
 RANLIB := $(BUILDTPREFIX)$(RANLIB)
 endif
 
-CPPFLAGS += -I lwlib -Icommon
+CPPFLAGS += -I lwlib -Icommon -Imame_srcdbg
 CPPFLAGS += -DPREFIX=$(PREFIX) -DLWCC_LIBDIR=$(LWCC_LIBDIR)
 CPPFLAGS += -DPROGSUFFIX=$(PROGSUFFIX)
+# -L/cygdrive/c/cygwin64/lib/gcc/x86_64-pc-cygwin/12 -lstdc++ 
 # LDFLAGS += -Llwlib -L../mame/build/mingw-gcc/bin/x64/Debug -llw -lmame_srcdbg_writer -Wl,-rpath,/usr/local/libexec
 # LDFLAGS += -Llwlib -L../mame/build/linux_gcc/bin/x64/Release -llw -lmame_srcdbg_writer -Wl,-rpath,'$${ORIGIN}'
-LDFLAGS += -Llwlib -L../mame/build/mingw-gcc/bin/x64/Debug -llw -lmame_srcdbg_static -lstdc++
-
-# -L/cygdrive/c/cygwin64/lib/gcc/x86_64-pc-cygwin/12 -lstdc++ 
-
-
+# LDFLAGS += -Llwlib -L../mame/build/mingw-gcc/bin/x64/Debug -llw -lmame_srcdbg_static -lstdc++
+LDFLAGS += -Llwlib -Lmame_srcdbg -llw -lmame_srcdbg_static -lstdc++
 
 # The format truncation warnings are bleeping stupid when applied to
 # snprintf() and friends. I'm using snprintf() precisely to prevent

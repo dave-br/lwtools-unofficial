@@ -10,7 +10,7 @@
 
 #include "lwlink.h"
 
-#include <../../mame/src/lib/srcdbg/srcdbg_api.h>
+#include <srcdbg_api.h>
 
 // // Converts a filespec into a full path.  Returns NULL if there was an error
 // char * normalize_path(const char * path_in, char * path_out)
