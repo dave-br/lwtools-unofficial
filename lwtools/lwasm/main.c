@@ -138,12 +138,6 @@ static int parse_opts(int key, char *arg, void *state)
 		break;
 
 	case 'i':
-		// if (as -> mame_dbg_file)
-		// 	lw_free(as -> mame_dbg_file);
-		// if (!arg)
-		// 	as -> mame_dbg_file = lw_strdup("-");
-		// else
-		// 	as -> mame_dbg_file = lw_strdup(arg);
 		as -> flags |= FLAG_MDI;
 		break;
 

@@ -440,7 +440,6 @@ struct asmstate_s
 	importlist_t *importlist;			// list of imported symbols
 	char *list_file;					// name of file to list to
 	char *symbol_dump_file;				// name of file to dump symbol table to
-	// char *mame_dbg_file;				// name of file to dump MAME debugging info to
 	int tabwidth;						// tab width in list file
 	char *map_file;						// name of map file
 	char *output_file;					// output file name	
