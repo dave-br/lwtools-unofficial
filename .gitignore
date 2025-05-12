@@ -51,10 +51,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+lwasm
 lwtools/.hg/*
 lwtools/.vscode/*
 
 #Exceptions
 
-!lwtools/mame_srcdbg/*
+!lwtools/mame_srcdbg/*/*
 
