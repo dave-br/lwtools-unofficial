@@ -54,3 +54,7 @@ dkms.conf
 lwtools/.hg/*
 lwtools/.vscode/*
 
+#Exceptions
+
+!lwtools/mame_srcdbg/*
+
