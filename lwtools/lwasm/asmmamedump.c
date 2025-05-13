@@ -139,7 +139,6 @@ void finalize_section_dump(void **mdi_simp_state, asmstate_t *as, file_path_map 
 	if (mame_err != MAME_SRCDBG_E_SUCCESS)
 	{
 		fprintf(stderr, "Error code '%d' trying to close MAME debuggin information file\n", mame_err);
-		return (unsigned short) -1;
 	}
 	*mdi_simp_state = NULL;
 }

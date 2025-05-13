@@ -59,7 +59,8 @@ LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
 # -O2 which seems okay for now. Ideally identifying what breaks at
 # -O3 is indicated, but so far, identifying the specific source of
 # the breakage has been problematic.
-CFLAGS ?= -O2 -Wno-char-subscripts -Wno-format-truncation
+# CFLAGS ?= -O2 -Wno-char-subscripts -Wno-format-truncation
+CFLAGS ?= -g -O0 -Wno-char-subscripts -Wno-format-truncation
 
 MAIN_TARGETS := lwasm/lwasm$(PROGSUFFIX) \
 	lwlink/lwlink$(PROGSUFFIX) \

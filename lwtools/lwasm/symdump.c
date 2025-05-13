@@ -66,7 +66,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 	struct symtabe *s;
 	lw_expr_t te;
 	struct listinfo li;
-	int mame_err
+	int mame_err;
 
 	li.as = as;
 	
