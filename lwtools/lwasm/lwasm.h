@@ -334,13 +334,7 @@ enum
 	symbol_flag_nocheck = 2,			// do not check symbol characters
 	symbol_flag_nolist = 4,				// no not show symbol in symbol table
 	symbol_flag_nocase = 8,				// do not match case of symbol
-	// TODO: Current code uses fallible heuritistic to just mark any symbol
-	// defined with EQU or SET or to a data address as constant.  (Fails when
-	// using EQU to a *, as that should not be considered constant.) Consider
-	// changing replacing heuristic with something explicitly declared by
-	// user, e.g., with a pragma or pseudo-op to define
-	// a block of code as defining constant symbols.
-	symbol_flag_constant = 16,			// does not participate in code relocation
+	symbol_flag_constant = 16,			// tell MAME debugging info this symbol is not a code address (i.e., OS9 code relocation won't change it)
 	symbol_flag_none = 0				// no flags
 };
 

@@ -1063,6 +1063,7 @@ PARSEFUNC(pseudo_parse_reorg)
 PARSEFUNC(pseudo_parse_equ)
 {
 	lw_expr_t e;
+	int symbol_flag = symbol_flag_constant;
 	
 	l -> len = 0;
 	
@@ -1072,14 +1073,25 @@ PARSEFUNC(pseudo_parse_equ)
 		return;
 	}
 	
+	// Simple heuristic: Any EQU is a "constant" (not a relocatable
+	// code address) unless the expression starts with '*' (with
+	// potentially a comment or other terms after).
+	// TODO: This is obviously fallible.  Consider
+	// implementing a pragma or pseudo-op so user can specify
+	// blocks of code as defining constants vs. relocatable code addresses
+	if (**p == '*')
+	{
+		symbol_flag = symbol_flag_none;
+	}
+	
 	e = lwasm_parse_expr(as, p);
 	if (!e)
 	{
 		lwasm_register_error(as, l, E_OPERAND_BAD);
 		return;
 	}
-	
-	register_symbol(as, l, l -> sym, e, symbol_flag_constant);
+
+	register_symbol(as, l, l -> sym, e, symbol_flag);
 	l -> symset = 1;
 	l -> dptr = lookup_symbol(as, l, l -> sym);
 	lw_expr_destroy(e);
