@@ -48,7 +48,7 @@ else
     LDFLAGS += -Lmame_srcdbg/linux
 endif
 # TODO: MAC
-LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
+LDFLAGS += -static-libgcc -Wl,-Bstatic -Llwlib -llw -lmame_srcdbg_static -lstdc++
 
 # The format truncation warnings are bleeping stupid when applied to
 # snprintf() and friends. I'm using snprintf() precisely to prevent
@@ -60,7 +60,11 @@ LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
 # -O3 is indicated, but so far, identifying the specific source of
 # the breakage has been problematic.
 # CFLAGS ?= -O2 -Wno-char-subscripts -Wno-format-truncation
-CFLAGS ?= -g -O0 -Wno-char-subscripts -Wno-format-truncation
+CFLAGS ?= -O2 -Wno-char-subscripts -Wno-format-truncation
+
+# -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread
+
+
 
 MAIN_TARGETS := lwasm/lwasm$(PROGSUFFIX) \
 	lwlink/lwlink$(PROGSUFFIX) \
