@@ -42,12 +42,13 @@ endif
 CPPFLAGS += -I lwlib -Icommon -Imame_srcdbg
 CPPFLAGS += -DPREFIX=$(PREFIX) -DLWCC_LIBDIR=$(LWCC_LIBDIR)
 CPPFLAGS += -DPROGSUFFIX=$(PROGSUFFIX)
-ifeq ($(OS),Windows_NT)
-    LDFLAGS += -Lmame_srcdbg/win
-else
-    LDFLAGS += -Lmame_srcdbg/linux
-endif
+# ifeq ($(OS),Windows_NT)
+#     LDFLAGS += -Lmame_srcdbg/win
+# else
+#     LDFLAGS += -Lmame_srcdbg/linux
+# endif
 # TODO: MAC
+LDFLAGS += -Lmame_srcdbg/mac
 LDFLAGS += -static -Llwlib -llw -lmame_srcdbg_static -lstdc++
 
 # The format truncation warnings are bleeping stupid when applied to
