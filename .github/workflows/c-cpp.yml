@@ -23,3 +23,11 @@ jobs:
 #      run: make check
 #    - name: make distcheck
 #      run: make distcheck
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: lwtools-unofficial-macos
+        path: |
+          lwtools/lwasm/lwasm
+          lwtools/lwlink/lwlink
