@@ -1116,7 +1116,7 @@ PARSEFUNC(pseudo_parse_set)
 		return;
 	}
 	
-	register_symbol(as, l, l -> sym, e, symbol_flag_constant);
+	register_symbol(as, l, l -> sym, e, symbol_flag_set | symbol_flag_constant);
 	l -> symset = 1;
 	l -> dptr = lookup_symbol(as, l, l -> sym);
 	lw_expr_destroy(e);
