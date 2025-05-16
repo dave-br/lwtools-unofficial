@@ -49,7 +49,9 @@ CPPFLAGS += -DPROGSUFFIX=$(PROGSUFFIX)
 # endif
 # TODO: MAC
 LDFLAGS += -Lmame_srcdbg/mac
-LDFLAGS += -static -Llwlib -llw -lmame_srcdbg_static -lstdc++
+# TODO: commenting this out while trying mac builds
+# LDFLAGS += -static -Llwlib -llw -lmame_srcdbg_static -lstdc++
+LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
 
 # The format truncation warnings are bleeping stupid when applied to
 # snprintf() and friends. I'm using snprintf() precisely to prevent
