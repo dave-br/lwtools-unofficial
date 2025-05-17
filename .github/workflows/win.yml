@@ -20,6 +20,8 @@ jobs:
         install: >-
           git
           make
+          gcc
+          g++
     - uses: actions/checkout@v4
     - name: make
       run: |
