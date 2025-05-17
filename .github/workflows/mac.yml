@@ -1,0 +1,26 @@
+name: mac
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: make
+      run: |
+          cd lwtools
+          make
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: lwtools-unofficial-macos
+        path: |
+          lwtools/lwasm/lwasm
+          lwtools/lwlink/lwlink
