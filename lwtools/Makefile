@@ -42,15 +42,19 @@ endif
 CPPFLAGS += -I lwlib -Icommon -Imame_srcdbg
 CPPFLAGS += -DPREFIX=$(PREFIX) -DLWCC_LIBDIR=$(LWCC_LIBDIR)
 CPPFLAGS += -DPROGSUFFIX=$(PROGSUFFIX)
-# ifeq ($(OS),Windows_NT)
-#     LDFLAGS += -Lmame_srcdbg/win
-# else
-#     LDFLAGS += -Lmame_srcdbg/linux
-# endif
-# TODO: MAC
-LDFLAGS += -Lmame_srcdbg/mac
-# TODO: commenting this out while trying mac builds
-# LDFLAGS += -static -Llwlib -llw -lmame_srcdbg_static -lstdc++
+
+UNAME_OS := $(shell uname -s)
+
+# Location of mame_srcdbg depends on OS
+ifeq ($(UNAME_OS),Linux)
+    LDFLAGS += -Lmame_srcdbg/linux -static
+else ifeq ($(UNAME_OS),Darwin)
+	# macos can't do fully static links
+	LDFLAGS += -Lmame_srcdbg/mac
+else
+    LDFLAGS += -Lmame_srcdbg/win -static
+endif
+
 LDFLAGS += -Llwlib -llw -lmame_srcdbg_static -lstdc++
 
 # The format truncation warnings are bleeping stupid when applied to

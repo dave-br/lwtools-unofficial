@@ -52,6 +52,10 @@ Mkfile.old
 dkms.conf
 
 lwasm
+lwar
+lwcc-cpp
+lwlink
+lwobjdump
 lwtools/.hg/*
 lwtools/.vscode/*
 
