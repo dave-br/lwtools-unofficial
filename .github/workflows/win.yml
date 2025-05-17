@@ -20,7 +20,10 @@ jobs:
         install: >-
           git
           make
-          gcc
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-lld
+          mingw-w64-x86_64-llvm
+          mingw-w64-x86_64-libc++
     - uses: actions/checkout@v4
     - name: make
       run: |
