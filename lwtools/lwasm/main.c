@@ -294,7 +294,9 @@ static struct lw_cmdline_parser cmdline_parser =
 	options,
 	parse_opts,
 	"INPUTFILE",
-	"lwasm, a HD6309 and MC6809 cross-assembler\vPlease report bugs to lost@l-w.ca.",
+	"lwasm, a HD6309 and MC6809 cross-assembler\v"
+	"WARNING: This is an unofficial, modified build of lwasm from\n"
+	"https://github.com/dave-br/mame-source-debugging-preview.\n",
 	PROGVER
 };
 
