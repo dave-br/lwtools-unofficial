@@ -195,6 +195,10 @@ extern void do_mame_dump(void);
 // assembler on the first file
 int main(int argc, char **argv)
 {
+	printf(
+		"WARNING: This is an unofficial, modified build of lwlink from\n"
+		"https://github.com/dave-br/mame-source-debugging-preview.\n");
+
 	program_name = argv[0];
 
 	if (lw_cmdline_parse(&cmdline_parser, argc, argv, 0, 0, NULL) != 0)

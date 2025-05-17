@@ -340,6 +340,10 @@ int main(int argc, char **argv)
 {
 	int passnum;
 
+	printf(
+		"WARNING: This is an unofficial, modified build of lwasm from\n"
+		"https://github.com/dave-br/mame-source-debugging-preview.\n");
+
 	/* assembler state */
 	asmstate_t asmstate = { 0 };
 	program_name = argv[0];
