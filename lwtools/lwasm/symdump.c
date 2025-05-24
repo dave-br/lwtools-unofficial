@@ -115,7 +115,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 		}
 		else if (lw_expr_istype(te, lw_expr_type_int) &&
 			// Apply section filter if present; always include symbols outside any section
-			(csect == NULL || as -> csect == NULL || csect == as -> csect))
+			(csect == NULL || s -> section == NULL || csect == s -> section))
 		{
 			mame_err = mame_srcdbg_simp_add_global_fixed_symbol(
 				mdi_simp_state,
@@ -124,7 +124,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 				(s -> flags & symbol_flag_constant) ? MAME_SRCDBG_SYMFLAG_CONSTANT : 0);
 			if (mame_err != MAME_SRCDBG_E_SUCCESS)
 			{
-				fprintf(stderr, "Error code '%d' trying to add new global variable to MAME debuggin information file\n", mame_err);
+				fprintf(stderr, "Error code '%d' trying to add new global variable to MAME debugging information file\n", mame_err);
 				return;
 			}
 		}

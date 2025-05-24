@@ -68,7 +68,7 @@ void do_mame_dump()
 	mame_err = mame_srcdbg_simp_close(mdi_simp_state);
 	if (mame_err != MAME_SRCDBG_E_SUCCESS)
 	{
-		fprintf(stderr, "Error code '%d' trying to close MAME debuggin information file\n", mame_err);
+		fprintf(stderr, "Error code '%d' trying to close MAME debugging information file\n", mame_err);
 	}
 	mdi_simp_state = NULL;
 }

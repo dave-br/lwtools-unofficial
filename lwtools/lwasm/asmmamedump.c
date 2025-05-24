@@ -138,7 +138,7 @@ void finalize_section_dump(void **mdi_simp_state, asmstate_t *as, file_path_map 
 	mame_err = mame_srcdbg_simp_close(*mdi_simp_state);
 	if (mame_err != MAME_SRCDBG_E_SUCCESS)
 	{
-		fprintf(stderr, "Error code '%d' trying to close MAME debuggin information file\n", mame_err);
+		fprintf(stderr, "Error code '%d' trying to close MAME debugging information file\n", mame_err);
 	}
 	*mdi_simp_state = NULL;
 }
@@ -161,23 +161,15 @@ void do_mame_dump(asmstate_t *as)
 	{
 		lw_expr_t te;
 
-		nl = cl -> next;
-
-		if (cl -> len < 1 && cl -> dlen < 1)
-			continue;
-
-		if ((cl -> insn >= 0) && (instab[cl -> insn].flags & lwasm_insn_setdata))
-			continue;
-
-		if (cl->lineno < 0)
+		if (cl->csect != NULL && cl->csect->name != NULL
+			&& strcmp(cl->csect->name, "_constants") == 0)
 		{
-			// TODO: IS THIS POSSIBLE?
-			continue;
+			printf("gotcha\n");
 		}
 
-		te = lw_expr_copy(cl -> addr);
-		as -> exportcheck = 1;
-		if (mdi_simp_state == NULL || (as -> csect != cl -> csect && cl -> csect != NULL))
+		nl = cl -> next;
+
+		if (mdi_simp_state == NULL || (as -> csect != cl -> csect /* && cl -> csect != NULL */))
 		{
 			// This line starts a new section
 
@@ -197,7 +189,22 @@ void do_mame_dump(asmstate_t *as)
 			}
 			filemap = fpm_create(mdi_simp_state);
 		}
+
 		as -> csect = cl -> csect;
+		if (cl -> len < 1 && cl -> dlen < 1)
+			continue;
+
+		if ((cl -> insn >= 0) && (instab[cl -> insn].flags & lwasm_insn_setdata))
+			continue;
+
+		if (cl->lineno < 0)
+		{
+			// TODO: IS THIS POSSIBLE?
+			continue;
+		}
+
+		as -> exportcheck = 1;
+		te = lw_expr_copy(cl -> addr);
 		lwasm_reduce_expr(as, te);
 		as -> exportcheck = 0;
 		unsigned short addr = (unsigned short) (lw_expr_intval(te) & 0xffff);
@@ -210,7 +217,7 @@ void do_mame_dump(asmstate_t *as)
 		mame_err = mame_srcdbg_simp_add_line_mapping(mdi_simp_state, addr, addr, file_idx, (unsigned int) cl->lineno);
 		if (mame_err != MAME_SRCDBG_E_SUCCESS)
 		{
-			fprintf(stderr, "Error code '%d' trying to add new line mapping to MAME debuggin information file\n", mame_err);
+			fprintf(stderr, "Error code '%d' trying to add new line mapping to MAME debugging information file\n", mame_err);
 			return;
 		}
 		lw_expr_destroy(te);
