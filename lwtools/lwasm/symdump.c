@@ -114,8 +114,8 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 			}
 		}
 		else if (lw_expr_istype(te, lw_expr_type_int) &&
-			// Apply section filter if present; always include symbols outside any section
-			(csect == NULL || s -> section == NULL || csect == s -> section))
+			// Apply section filter if present; ??? always include symbols outside any section
+			(/* csect == NULL || s -> section == NULL || */ csect == s -> section))
 		{
 			mame_err = mame_srcdbg_simp_add_global_fixed_symbol(
 				mdi_simp_state,
