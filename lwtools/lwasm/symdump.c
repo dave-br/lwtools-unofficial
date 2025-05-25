@@ -61,7 +61,7 @@ int dump_symbols_test(lw_expr_t e, void *p)
 	return 0;
 }
 
-void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectiontab_t *csect, struct symtabe *se)
+void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, int apply_section_filter, sectiontab_t *csect, struct symtabe *se)
 {
 	struct symtabe *s;
 	lw_expr_t te;
@@ -73,7 +73,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 	if (!se)
 		return;
 	
-	dump_symbols_aux(as, of, mdi_simp_state, csect, se -> left);
+	dump_symbols_aux(as, of, mdi_simp_state, apply_section_filter, csect, se -> left);
 	
 	for (s = se; s; s = s -> nextver)
 	{	
@@ -114,8 +114,8 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 			}
 		}
 		else if (lw_expr_istype(te, lw_expr_type_int) &&
-			// Apply section filter if present; ??? always include symbols outside any section
-			(/* csect == NULL || s -> section == NULL || */ csect == s -> section))
+			// Apply section filter if present
+			(!apply_section_filter || csect == s -> section))
 		{
 			mame_err = mame_srcdbg_simp_add_global_fixed_symbol(
 				mdi_simp_state,
@@ -131,7 +131,7 @@ void dump_symbols_aux(asmstate_t *as, FILE *of, void * mdi_simp_state, sectionta
 		lw_expr_destroy(te);
 	}
 	
-	dump_symbols_aux(as, of, mdi_simp_state, csect, se -> right);
+	dump_symbols_aux(as, of, mdi_simp_state, apply_section_filter, csect, se -> right);
 }
 
 void do_symdump(asmstate_t *as)
@@ -162,5 +162,11 @@ void do_symdump(asmstate_t *as)
 			return;
 		}
 	}
-	dump_symbols_aux(as, of, NULL /* mdi_simp_state */, NULL /* sect */, as -> symtab.head);
+	dump_symbols_aux(
+		as, 
+		of, 
+		NULL /* mdi_simp_state */, 
+		0 /* apply_section_filter */, 
+		NULL /* sect */, 
+		as -> symtab.head);
 }

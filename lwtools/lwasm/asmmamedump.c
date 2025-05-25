@@ -32,7 +32,6 @@ struct mditab_s
 	sectiontab_t * section;
 	void * mdi_simp_state;
 	file_path_map * filemap;
-
 	mditab_t * next;
 };
 
@@ -132,14 +131,20 @@ void get_mdi_name(char *mdi_name, const char *mdi_base_name, const char *section
 		(section_name == NULL ? "" : section_name));
 }
 
-void dump_symbols_aux(asmstate_t *as, FILE *of, void *mdi_simp_state, sectiontab_t *csect, struct symtabe *se);
+void dump_symbols_aux(asmstate_t *as, FILE *of, void *mdi_simp_state, int apply_section_filter, sectiontab_t *csect, struct symtabe *se);
 
 void finalize_section_dump(asmstate_t *as, mditab_t * mdi)
 {
 	int mame_err;
 	assert (mdi -> mdi_simp_state != NULL);
 
-	dump_symbols_aux(as, NULL /* list file */, mdi -> mdi_simp_state, mdi -> section, as -> symtab.head);
+	dump_symbols_aux(
+		as,
+		NULL /* list file */,
+		mdi -> mdi_simp_state,
+		1 /* apply_section_filter */,
+		mdi -> section,
+		as -> symtab.head);
 
 	fpm_destroy(mdi -> filemap);
 	mdi -> filemap = NULL;
@@ -152,6 +157,9 @@ void finalize_section_dump(asmstate_t *as, mditab_t * mdi)
 	mdi -> mdi_simp_state = NULL;
 }
 
+// Obtains MDI for specified section.  If one already exists, it is returned.
+// Otherwise a new one is created, added to the mdi table, and returned.
+// Returns 0 if successful, nonzero if error.
 int mdi_for_section(asmstate_t *as, mditab_t ** mdis, sectiontab_t * section, mditab_t ** requested_mdi)
 {
 	mditab_t * mdi = NULL;
@@ -167,6 +175,7 @@ int mdi_for_section(asmstate_t *as, mditab_t ** mdis, sectiontab_t * section, md
 
 	if (mdi != NULL)
 	{
+		// Requested MDI exists; done.
 		*requested_mdi = mdi;
 		return 0;
 	}
@@ -181,7 +190,6 @@ int mdi_for_section(asmstate_t *as, mditab_t ** mdis, sectiontab_t * section, md
 	}
 
 	// Allocate new mdi table entry
-	// TODO: MEMORY LEAK
 	mdi = lw_alloc(sizeof(mditab_t));
 	mdi -> section = section;
 	mdi -> filemap = fpm_create(mdi_simp_state);
@@ -196,14 +204,12 @@ int mdi_for_section(asmstate_t *as, mditab_t ** mdis, sectiontab_t * section, md
 
 void do_mame_dump(asmstate_t *as)
 {
-	// void * mdi_simp_state = NULL; 
 	mditab_t * mdis = NULL;
 	mditab_t * mdi_cur = NULL;
+	mditab_t * mdi_next = NULL;
 	line_t *cl, *nl;
-	// file_path_map * filemap = NULL;
 	int mame_err;
 
-	// if (!(as -> flags & FLAG_MDI) || !as->mame_dbg_file)
 	if (!(as -> flags & FLAG_MDI))
 		return;
 
@@ -217,15 +223,8 @@ void do_mame_dump(asmstate_t *as)
 	{
 		lw_expr_t te;
 
-		if (cl->csect != NULL && cl->csect->name != NULL
-			&& strcmp(cl->csect->name, "_constants") == 0)
-		{
-			printf("gotcha\n");
-		}
-
 		nl = cl -> next;
 
-		// if (/* mdi_simp_state == NULL || */ (as -> csect != cl -> csect /* && cl -> csect != NULL */))
 		if (mdi_cur -> section != cl -> csect)
 		{
 			// This line starts a new section
@@ -269,9 +268,10 @@ void do_mame_dump(asmstate_t *as)
 	}
 
 	// For each mdi opened, add symbols to it, then write it to disk
-	for (mdi_cur = mdis; mdi_cur; mdi_cur = mdi_cur -> next)
+	for (mdi_cur = mdis; mdi_cur; mdi_cur = mdi_next)
 	{
 		finalize_section_dump(as, mdi_cur);
+		mdi_next = mdi_cur -> next;
+		lw_free(mdi_cur);
 	}
-	// TODO: DELETE mdis
 }
