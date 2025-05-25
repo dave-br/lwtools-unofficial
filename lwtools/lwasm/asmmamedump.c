@@ -134,22 +134,22 @@ void get_mdi_name(char *mdi_name, const char *mdi_base_name, const char *section
 
 void dump_symbols_aux(asmstate_t *as, FILE *of, void *mdi_simp_state, sectiontab_t *csect, struct symtabe *se);
 
-void finalize_section_dump(void **mdi_simp_state, asmstate_t *as, file_path_map **filemap)
+void finalize_section_dump(asmstate_t *as, mditab_t * mdi)
 {
 	int mame_err;
-	assert (*mdi_simp_state != NULL);
+	assert (mdi -> mdi_simp_state != NULL);
 
-	dump_symbols_aux(as, NULL /* list file */, *mdi_simp_state, as -> csect, as -> symtab.head);
+	dump_symbols_aux(as, NULL /* list file */, mdi -> mdi_simp_state, mdi -> section, as -> symtab.head);
 
-	fpm_destroy(*filemap);
-	*filemap = NULL;
+	fpm_destroy(mdi -> filemap);
+	mdi -> filemap = NULL;
 
-	mame_err = mame_srcdbg_simp_close(*mdi_simp_state);
+	mame_err = mame_srcdbg_simp_close(mdi -> mdi_simp_state);
 	if (mame_err != MAME_SRCDBG_E_SUCCESS)
 	{
 		fprintf(stderr, "Error code '%d' trying to close MAME debugging information file\n", mame_err);
 	}
-	*mdi_simp_state = NULL;
+	mdi -> mdi_simp_state = NULL;
 }
 
 int mdi_for_section(asmstate_t *as, mditab_t ** mdis, sectiontab_t * section, mditab_t ** requested_mdi)
@@ -271,7 +271,7 @@ void do_mame_dump(asmstate_t *as)
 	// For each mdi opened, add symbols to it, then write it to disk
 	for (mdi_cur = mdis; mdi_cur; mdi_cur = mdi_cur -> next)
 	{
-		finalize_section_dump(&mdi_cur -> mdi_simp_state, as, &mdi_cur -> filemap);
+		finalize_section_dump(as, mdi_cur);
 	}
 	// TODO: DELETE mdis
 }
