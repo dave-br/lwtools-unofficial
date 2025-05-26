@@ -59,9 +59,13 @@ void do_mame_dump()
 		mame_err = mame_srcdbg_simp_import(mdi_simp_state, imported_mdi_name, sectlist[sn].ptr -> loadaddress, mame_import_error_message, sizeof(mame_import_error_message));
 		if (mame_err != MAME_SRCDBG_E_SUCCESS)
 		{
-			fprintf(stderr, "Error code '%d', trying to import MAME debugging information file '%s'\n", mame_err, imported_mdi_name);
+			// TODO: Could tighten this into a proper error if user could
+			// specify which MDIs they want to import.  CMOC only needs
+			// code section for user code, but also whatever sections
+			// are available from stdlib/float.
+			fprintf(stderr, "Warning: code '%d', trying to import MAME debugging information file '%s'\n", mame_err, imported_mdi_name);
 			fprintf(stderr, "%s\n", mame_import_error_message);
-			return;
+			fprintf(stderr, "This information will be missing from the generated debugging information file.\n");
 		}
 	}
 
