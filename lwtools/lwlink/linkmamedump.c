@@ -14,25 +14,33 @@
 #include <srcdbg_api.h>
 
 // TODO: SHARE WITH LWASM
-void get_mdi_name(char *mdi_name, const char *mdi_dir, const char *mdi_base_name, const char *section_name)
+void get_mdi_name(char *mdi_name, const char *mdi_dir, const char *mdi_base_name, const char *section_name, int relocated)
 {
 	// TODO: NEEDS SIZE CHECKING, ERROR HANDLING
+	*mdi_name = '\0';
 	if (mdi_dir)
 	{
-		sprintf(mdi_name, "%s/%s_%s.mdi", mdi_dir, mdi_base_name, section_name);
+		strcat(mdi_name, mdi_dir);
+		strcat(mdi_name, "/");
 	}
-	else
+	strcat(mdi_name, mdi_base_name);
+	strcat(mdi_name, "_");
+	strcat(mdi_name, section_name);
+	if (relocated)
 	{
-		sprintf(mdi_name, "%s_%s.mdi", mdi_base_name, section_name);
+		strcat(mdi_name, "_relocated");
 	}
+	strcat(mdi_name, ".mdi");
 }
 
 
 void do_mame_dump()
 {
 	void * mdi_simp_state = NULL; 
+	void * mdi_simp_state_relocated = NULL;
 	int sn;
 	char imported_mdi_name[PATH_MAX+1];
+	char relocated_mdi_name[PATH_MAX+1];
 	char mame_import_error_message[1024];
 	int mame_err;
 
@@ -54,8 +62,9 @@ void do_mame_dump()
 			sectdir = sectlist[sn].ptr -> file -> parent -> filedir;
 		}
 
-		get_mdi_name(imported_mdi_name, sectdir, sectfile, sectname);
-
+		get_mdi_name(imported_mdi_name, sectdir, sectfile, sectname, 0 /* relocated */);
+		
+		// Import intermediate MDI into linked MDI
 		mame_err = mame_srcdbg_simp_import(mdi_simp_state, imported_mdi_name, sectlist[sn].ptr -> loadaddress, mame_import_error_message, sizeof(mame_import_error_message));
 		if (mame_err != MAME_SRCDBG_E_SUCCESS)
 		{
@@ -66,7 +75,36 @@ void do_mame_dump()
 			fprintf(stderr, "Warning: code '%d', trying to import MAME debugging information file '%s'\n", mame_err, imported_mdi_name);
 			fprintf(stderr, "%s\n", mame_import_error_message);
 			fprintf(stderr, "This information will be missing from the generated debugging information file.\n");
+			continue;
 		}
+
+		// Import intermediate MDI into its own relocated MDI.  Useful in cases
+		// where different code gets swapped into and out of the same logical
+		// address space (using MMU or SAM)
+		// TODO: This doubles the MDI crud on the hard drive, so should add a
+		// cmd line param to turn this on explicitly
+		get_mdi_name(relocated_mdi_name, sectdir, sectfile, sectname, 1 /* relocated */);
+		mame_err = mame_srcdbg_simp_open_new(relocated_mdi_name, &mdi_simp_state_relocated);
+		if (mame_err != MAME_SRCDBG_E_SUCCESS)
+		{
+			fprintf(stderr, "Error code '%d', errno '%d', trying to create relocated MAME debugging information file '%s'\n", mame_err, errno, relocated_mdi_name);
+			continue;
+		}
+		mame_err = mame_srcdbg_simp_import(mdi_simp_state_relocated, imported_mdi_name, sectlist[sn].ptr -> loadaddress, mame_import_error_message, sizeof(mame_import_error_message));
+		if (mame_err != MAME_SRCDBG_E_SUCCESS)
+		{
+			fprintf(stderr, "Warning: code '%d', trying to import MAME debugging information file '%s' into relocated MDI '%s'\n", mame_err, imported_mdi_name, relocated_mdi_name);
+			fprintf(stderr, "%s\n", mame_import_error_message);
+			mame_srcdbg_simp_close(mdi_simp_state_relocated);
+			mdi_simp_state_relocated = NULL;
+			continue;
+		}
+		mame_err = mame_srcdbg_simp_close(mdi_simp_state_relocated);
+		if (mame_err != MAME_SRCDBG_E_SUCCESS)
+		{
+			fprintf(stderr, "Error code '%d' trying to close relocated MAME debugging information file '%s'\n", mame_err, relocated_mdi_name);
+		}
+		mdi_simp_state_relocated = NULL;
 	}
 
 	mame_err = mame_srcdbg_simp_close(mdi_simp_state);
