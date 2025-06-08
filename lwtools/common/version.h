@@ -22,6 +22,6 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 #ifndef lw_version_h_seen___
 #define lw_version_h_seen___
 
-#define PACKAGE_STRING "lwtools 4.24"
+#define PACKAGE_STRING "lwtools 4.24 (MAME source debugging preview R2)"
 
 #endif /* lw_version_h_seen___ */
